@@ -1,6 +1,4 @@
 __pycache__/
-*.pyc
 .env
-chromedriver.exe
-User Data/
+*.pyc
 *.log
