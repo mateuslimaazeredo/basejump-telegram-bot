@@ -1,43 +1,27 @@
 import os
-import time
 import requests
-from dotenv import load_dotenv
+from flask import Flask, request
 
-# =========================
-# CONFIGURAÇÃO TELEGRAM
-# =========================
-load_dotenv()
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+app = Flask(__name__)
 
-# =========================
-# FUNÇÃO PARA ENVIAR MENSAGEM
-# =========================
-def enviar_mensagem_telegram(texto):
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    payload = {"chat_id": TELEGRAM_CHAT_ID, "text": texto, "parse_mode": "HTML"}
-    try:
-        response = requests.post(url, json=payload, timeout=10)
-        if response.status_code == 200:
-            print("✅ Mensagem enviada ao Telegram!")
-        else:
-            print(f"⚠️ Falha ao enviar mensagem ({response.text})")
-    except Exception as e:
-        print(f"❌ Erro ao conectar ao Telegram: {e}")
+TOKEN = os.getenv("TELEGRAM_TOKEN")
 
-# =========================
-# FUNÇÃO PRINCIPAL DO BOT
-# =========================
-def main():
-    print("🚀 Bot Basejump iniciado!")
-    enviar_mensagem_telegram("🤖 Bot Basejump iniciado com sucesso!")
+@app.route(f"/{TOKEN}", methods=["POST"])
+def responder():
+    data = request.get_json()
+    chat_id = data["message"]["chat"]["id"]
+    texto = data["message"]["text"]
 
-    # Aqui você pode rodar seu script de automação Selenium ou agendar execuções diárias
-    while True:
-        # Exemplo: envia mensagem de status a cada 24h
-        enviar_mensagem_telegram("📊 Execução automática completa — tudo funcionando!")
-        print("🕐 Aguardando próxima execução...")
-        time.sleep(86400)  # 24h = 86400 segundos
+    resposta = f"👋 Olá! Seu chat_id é: <b>{chat_id}</b>"
+    requests.post(
+        f"https://api.telegram.org/bot{TOKEN}/sendMessage",
+        json={"chat_id": chat_id, "text": resposta, "parse_mode": "HTML"}
+    )
+    return "ok"
+
+@app.route("/")
+def home():
+    return "Bot Basejump ativo!"
 
 if __name__ == "__main__":
-    main()
+    app.run(port=5000)
